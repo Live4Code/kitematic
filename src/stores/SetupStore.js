@@ -11,6 +11,7 @@ var assign = require('object-assign');
 var metrics = require('../utils/MetricsUtil');
 var bugsnag = require('bugsnag-js');
 var docker = require('../utils/DockerUtil');
+var live4codeUtil = require('../utils/Live4CodeUtil');
 
 var _currentStep = null;
 var _error = null;
@@ -215,6 +216,9 @@ var SetupStore = assign(Object.create(EventEmitter.prototype), {
           };
         }
         docker.setup(ip, machine.name());
+        //add live4code util, modify host entry
+        util.exec(live4codeUtil.macSudoCmd(live4codeUtil.addHostEntry(ip)));
+
         yield docker.waitForConnection();
         metrics.track('Setup Finished');
         break;

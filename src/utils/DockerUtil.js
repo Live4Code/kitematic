@@ -9,6 +9,7 @@ import metrics from '../utils/MetricsUtil';
 import containerServerActions from '../actions/ContainerServerActions';
 import Promise from 'bluebird';
 import rimraf from 'rimraf';
+import live4codeUtil from './Live4CodeUtil';
 
 export default {
   host: null,
@@ -101,6 +102,8 @@ export default {
       containerData.Env = containerData.Config.Env;
     }
 
+    //modify start config if necessary
+    containerData = live4codeUtil.containerConfig(containerData);
 
     containerData.Volumes = _.mapObject(containerData.Volumes, () => {return {};});
 

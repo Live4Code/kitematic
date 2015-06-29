@@ -150,7 +150,39 @@ module.exports = {
             }
 
             let data = JSON.parse(body);
-            cb(null, data.results);
+            let results = data.results;
+            let continueRead  = function(url){
+              console.log(url);
+              hubUtil.request({url: url}, function(error, response, body){
+                if (error) {
+                  repositoryServerActions.error({ error: error });
+                  if (callback) {
+                    callback(error);
+                  }
+                  return;
+                }
+
+                if (response.statusCode !== 200) {
+                  repositoryServerActions.error({ error: new Error('Could not fetch repository information from Docker Hub.') });
+                  return;
+                }
+
+                data = JSON.parse(body);
+                results.push.apply(results, data.results);
+                if (data.next){
+                  continueRead(data.next);
+                } else {
+                  cb(null, results);
+                }
+              });
+            };
+
+            if (data.next){
+              continueRead(data.next);
+            } else {
+              cb(null, results);
+            }
+
           });
         }, (error, lists) => {
           if (error) {
