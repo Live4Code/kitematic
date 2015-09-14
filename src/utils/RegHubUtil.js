@@ -199,7 +199,6 @@ module.exports = {
           _.each(repos, repo => {
             repo.is_user_repo = true;
           });
-
           repositoryServerActions.reposUpdated({repos});
           if (callback) { callback(null, repos); }
       });

@@ -13,6 +13,8 @@ var accountActions = require('../actions/AccountActions');
 var Router = require('react-router');
 var classNames = require('classnames');
 
+var live4codeActions = require('../actions/Live4CodeActions');
+
 var Header = React.createClass({
   mixins: [Router.Navigation],
   getInitialState: function () {
@@ -102,7 +104,8 @@ var Header = React.createClass({
   },
   handleLogoutClick: function () {
     metrics.track('Logged Out');
-    accountActions.logout();
+    live4codeActions.logout();
+    this.transitionTo('l4cLogin');
   },
   handleVerifyClick: function () {
     metrics.track('Verified Account', {

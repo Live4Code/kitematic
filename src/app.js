@@ -50,10 +50,12 @@ routerContainer.set(router);
 SetupStore.setup().then(() => {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template()));
   docker.init();
-  if (!hub.prompted() && !hub.loggedin()) {
-    router.transitionTo('login');
+  if (!hub.loggedin()) {
+    router.transitionTo('l4cLogin');
   } else {
-    router.transitionTo('search');
+    let name = 'runnertaskserver';
+    router.transitionTo('containerHome', {name});
+    //router.transitionTo('search');
   }
 }).catch(err => {
   metrics.track('Setup Failed', {

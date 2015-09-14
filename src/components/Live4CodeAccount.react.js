@@ -27,24 +27,10 @@ module.exports = React.createClass({
   },
 
   componentWillUpdate: function (nextProps, nextState) {
-    if (!this.state.username && nextState.username) {
-      if (nextState.prompted) {
-        this.goBack();
-      } else {
-        this.transitionTo('search');
-      }
+    if (nextState.username){
+      let name = 'runnertaskserver';
+      this.transitionTo('containerHome', {name});
     }
-  },
-
-  handleSkip: function () {
-    accountActions.skip();
-    this.transitionTo('search');
-    metrics.track('Skipped Login');
-  },
-
-  handleClose: function () {
-    this.goBack();
-    metrics.track('Closed Login');
   },
 
   update: function () {
@@ -52,10 +38,6 @@ module.exports = React.createClass({
   },
 
   render: function () {
-    let close = this.state.prompted ?
-        <a className="btn btn-action btn-close" disabled={this.state.loading} onClick={this.handleClose}>Close</a> :
-        <a className="btn btn-action btn-skip"  disabled={this.state.loading} onClick={this.handleSkip}>Skip For Now</a>;
-
     return (
       <div className="setup">
         <Header hideLogin={true}/>

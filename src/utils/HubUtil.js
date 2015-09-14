@@ -106,7 +106,6 @@ module.exports = {
       }
 
       let data = JSON.parse(body);
-
       if (response.statusCode === 200) {
         if (data.token) {
           localStorage.setItem('auth.jwt', data.token);

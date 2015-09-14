@@ -17,6 +17,9 @@ var NewContainerSearch = require('./components/NewContainerSearch.react');
 var NewContainerPull = require('./components/NewContainerPull.react');
 var Router = require('react-router');
 
+var Live4CodeAccount = require('./components/Live4CodeAccount.react');
+var Live4CodeAccountLogin = require('./components/Live4CodeAccountLogin.react');
+
 var Route = Router.Route;
 var DefaultRoute = Router.DefaultRoute;
 var RouteHandler = Router.RouteHandler;
@@ -31,6 +34,9 @@ var App = React.createClass({
 
 var routes = (
   <Route name="app" path="/" handler={App}>
+    <Route name="l4cAccount" path="/l4c-account" handler={Live4CodeAccount}>
+      <Route name="l4cLogin" path="/l4c-account/login" handler={Live4CodeAccountLogin}/>
+    </Route>
     <Route name="account" path="/account" handler={Account}>
       <Route name="signup" path="/account/signup" handler={AccountSignup}/>
       <Route name="login" path="/account/login" handler={AccountLogin}/>
