@@ -1,10 +1,10 @@
-var exec = require('exec');
-var child_process = require('child_process');
-var Promise = require('bluebird');
-var fs = require('fs');
-var path = require('path');
-var crypto = require('crypto');
-var remote = require('remote');
+import exec from 'exec';
+import child_process from 'child_process';
+import Promise from 'bluebird';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import remote from 'remote';
 var app = remote.require('app');
 
 module.exports = {
@@ -71,7 +71,8 @@ module.exports = {
     }
     return str.replace(/-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/mg, '<redacted>')
       .replace(/-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/mg, '<redacted>')
-      .replace(/\/Users\/[^\/]*\//mg, '/Users/<redacted>/');
+      .replace(/\/Users\/[^\/]*\//mg, '/Users/<redacted>/')
+      .replace(/\\Users\\[^\/]*\\/mg, '\\Users\\<redacted>\\');
   },
   packagejson: function () {
     return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
@@ -97,11 +98,11 @@ module.exports = {
   },
   compareVersions: function (v1, v2, options) {
     var lexicographical = options && options.lexicographical,
-    zeroExtend = options && options.zeroExtend,
-    v1parts = v1.split('.'),
-    v2parts = v2.split('.');
+      zeroExtend = options && options.zeroExtend,
+      v1parts = v1.split('.'),
+      v2parts = v2.split('.');
 
-    function isValidPart(x) {
+    function isValidPart (x) {
       return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
     }
 
@@ -129,11 +130,9 @@ module.exports = {
       }
       if (v1parts[i] === v2parts[i]) {
         continue;
-      }
-      else if (v1parts[i] > v2parts[i]) {
+      } else if (v1parts[i] > v2parts[i]) {
         return 1;
-      }
-      else {
+      } else {
         return -1;
       }
     }
@@ -147,9 +146,9 @@ module.exports = {
   randomId: function () {
     return crypto.randomBytes(32).toString('hex');
   },
-  windowsToLinuxPath: function(windowsAbsPath) {
+  windowsToLinuxPath: function (windowsAbsPath) {
     var fullPath = windowsAbsPath.replace(':', '').split(path.sep).join('/');
-    if(fullPath.charAt(0) !== '/'){
+    if (fullPath.charAt(0) !== '/') {
       fullPath = '/' + fullPath.charAt(0).toLowerCase() + fullPath.substring(1);
     }
     return fullPath;
@@ -157,5 +156,5 @@ module.exports = {
   linuxToWindowsPath: function (linuxAbsPath) {
     return linuxAbsPath.replace('/c', 'C:').split('/').join('\\');
   },
-  webPorts: ['80', '8000', '8080', '3000', '5000', '2368', '9200', '8983']
+  webPorts: ['80', '8000', '8080', '8888', '3000', '5000', '2368', '9200', '8983']
 };

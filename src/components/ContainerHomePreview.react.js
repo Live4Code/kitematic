@@ -1,8 +1,8 @@
-var _ = require('underscore');
-var React = require('react/addons');
-var request = require('request');
-var shell = require('shell');
-var metrics = require('../utils/MetricsUtil');
+import _ from 'underscore';
+import React from 'react/addons';
+import request from 'request';
+import shell from 'shell';
+import metrics from '../utils/MetricsUtil';
 
 var ContainerHomePreview = React.createClass({
   contextTypes: {
@@ -25,7 +25,7 @@ var ContainerHomePreview = React.createClass({
     }
   },
 
-  componentWillUnmount: function() {
+  componentWillUnmount: function () {
     clearInterval(this.timer);
   },
 
@@ -73,7 +73,7 @@ var ContainerHomePreview = React.createClass({
         return (
           <tr key={key}>
             <td>{key}</td>
-            <td>{val.display}</td>
+            <td>{val.url}</td>
           </tr>
         );
       });

@@ -104,19 +104,28 @@ export default {
 
     //modify start config if necessary
     containerData = live4codeUtil.containerConfig(containerData);
+    containerData.Volumes = _.mapObject(containerData.Volumes, () => {});
 
-    containerData.Volumes = _.mapObject(containerData.Volumes, () => {return {};});
+    this.client.getImage(containerData.Image).inspect((error, image) => {
+      if (error) {
+        containerServerActions.error({name, error});
+        return;
+      }
 
-    let existing = this.client.getContainer(name);
-    existing.kill(() => {
-      existing.remove(() => {
-        this.client.createContainer(containerData, (error) => {
-          if (error) {
-            containerServerActions.error({name, error});
-            return;
-          }
-          metrics.track('Container Finished Creating');
-          this.startContainer(name, containerData);
+      containerData.Cmd = image.Config.Cmd || 'bash';
+      let existing = this.client.getContainer(name);
+      existing.kill(() => {
+        existing.remove(() => {
+          this.client.createContainer(containerData, (error) => {
+            if (error) {
+              containerServerActions.error({name, error});
+              return;
+            }
+            metrics.track('Container Finished Creating');
+            this.startContainer(name, containerData);
+            delete this.placeholders[name];
+            localStorage.setItem('placeholders', JSON.stringify(this.placeholders));
+          });
         });
       });
     });
@@ -167,7 +176,7 @@ export default {
       Name: name,
       Image: imageName,
       Config: {
-        Image: imageName,
+        Image: imageName
       },
       Tty: true,
       OpenStdin: true,
@@ -190,8 +199,6 @@ export default {
         return;
       }
 
-      delete this.placeholders[name];
-      localStorage.setItem('placeholders', JSON.stringify(this.placeholders));
       this.createContainer(name, {Image: imageName, Tty: true, OpenStdin: true});
     },
 
@@ -221,6 +228,11 @@ export default {
 
       if (!existingData.Env && existingData.Config && existingData.Config.Env) {
         existingData.Env = existingData.Config.Env;
+      }
+
+      if ((!existingData.Tty || !existingData.OpenStdin) && existingData.Config && (existingData.Config.Tty || existingData.Config.OpenStdin)) {
+        existingData.Tty = existingData.Config.Tty;
+        existingData.OpenStdin = existingData.Config.OpenStdin;
       }
 
       var fullData = _.extend(existingData, data);
@@ -260,17 +272,17 @@ export default {
   },
 
   restart (name) {
-    let container = this.client.getContainer(name);
-    container.stop(error => {
-      if (error && error.statusCode !== 304) {
-        containerServerActions.error({name, error});
+    this.client.getContainer(name).stop(stopError => {
+      if (stopError && stopError.statusCode !== 304) {
+        containerServerActions.error({name, stopError});
         return;
       }
-      container.inspect((error, data) => {
-        if (error) {
-          containerServerActions.error({name, error});
+      this.client.getContainer(name).start(startError => {
+        if (startError && startError.statusCode !== 304) {
+          containerServerActions.error({name, startError});
+          return;
         }
-        this.startContainer(name, data);
+        this.fetchContainer(name);
       });
     });
   },
@@ -305,12 +317,12 @@ export default {
 
     let container = this.client.getContainer(name);
     container.unpause(function () {
-      container.kill(function (error) {
-        if (error) {
-          containerServerActions.error({name, error});
-          return;
-        }
-        container.remove(function () {
+      container.kill(function () {
+        container.remove(function (error) {
+          if (error) {
+            containerServerActions.error({name, error});
+            return;
+          }
           containerServerActions.destroyed({id: name});
           var volumePath = path.join(util.home(), 'Kitematic', name);
           if (fs.existsSync(volumePath)) {
@@ -458,36 +470,6 @@ export default {
       });
       stream.on('end', function () {
         callback(error);
-      });
-    });
-  },
-
-  // TODO: move this to machine health checks
-  waitForConnection (tries, delay) {
-    tries = tries || 10;
-    delay = delay || 1000;
-    let tryCount = 1, connected = false;
-    return new Promise((resolve, reject) => {
-      async.until(() => connected, callback => {
-        this.client.listContainers(error => {
-          if (error) {
-            if (tryCount > tries) {
-              callback(Error('Cannot connect to the Docker Engine. Either the VM is not responding or the connection may be blocked (VPN or Proxy): ' + error.message));
-            } else {
-              tryCount += 1;
-              setTimeout(callback, delay);
-            }
-          } else {
-            connected = true;
-            callback();
-          }
-        });
-      }, error => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
       });
     });
   }

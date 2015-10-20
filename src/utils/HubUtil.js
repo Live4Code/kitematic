@@ -1,7 +1,7 @@
-var _ = require('underscore');
-var request = require('request');
-var accountServerActions = require('../actions/AccountServerActions');
-var metrics = require('./MetricsUtil');
+import _ from 'underscore';
+import request from 'request';
+import accountServerActions from '../actions/AccountServerActions';
+import metrics from './MetricsUtil';
 
 let HUB2_ENDPOINT = process.env.HUB2_ENDPOINT || 'https://hub.docker.com/v2';
 
@@ -95,6 +95,10 @@ module.exports = {
     localStorage.removeItem('auth.username');
     localStorage.removeItem('auth.verified');
     localStorage.removeItem('auth.config');
+
+    this.request({
+      url: `${HUB2_ENDPOINT}/logout`
+    }, (error, response, body) => {});
   },
 
   login: function (username, password, callback) {

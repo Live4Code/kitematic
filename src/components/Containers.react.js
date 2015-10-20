@@ -1,13 +1,13 @@
-var $ = require('jquery');
-var _ = require('underscore');
-var React = require('react');
-var Router = require('react-router');
-var containerStore = require('../stores/ContainerStore');
-var ContainerList = require('./ContainerList.react');
-var Header = require('./Header.react');
-var metrics = require('../utils/MetricsUtil');
-var shell = require('shell');
-var machine = require('../utils/DockerMachineUtil');
+import $ from 'jquery';
+import _ from 'underscore';
+import React from 'react';
+import Router from 'react-router';
+import containerStore from '../stores/ContainerStore';
+import ContainerList from './ContainerList.react';
+import Header from './Header.react';
+import metrics from '../utils/MetricsUtil';
+import shell from 'shell';
+import machine from '../utils/DockerMachineUtil';
 
 var Containers = React.createClass({
   contextTypes: {
@@ -84,7 +84,7 @@ var Containers = React.createClass({
 
   handleNewContainer: function () {
     $(this.getDOMNode()).find('.new-container-item').parent().fadeIn();
-    this.context.router.transitionTo('new');
+    this.context.router.transitionTo('search');
     metrics.track('Pressed New Container');
   },
 
@@ -160,7 +160,7 @@ var Containers = React.createClass({
             <section className={sidebarHeaderClass}>
               <h4>Containers</h4>
               <div className="create">
-                <Router.Link to="new">
+                <Router.Link to="search">
                   <span className="btn btn-new btn-action has-icon btn-hollow"><span className="icon icon-add"></span>New</span>
                 </Router.Link>
               </div>

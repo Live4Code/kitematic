@@ -29,7 +29,7 @@ export default  {
           }
           machine.ip().then(ip => {
             localStorage.setItem('live4code.machineIP', ip);
-            hub.login('live4codekitematic','kitematic', function(err, ok){
+            hub.login('live4codelocal','kitematic', function(err, ok){
               self.startInitContainer();
             });
           });

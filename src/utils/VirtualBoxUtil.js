@@ -1,29 +1,26 @@
-var fs = require('fs');
-var util = require('./Util');
-var Promise = require('bluebird');
+import fs from 'fs';
+import path from 'path';
+import util from './Util';
+import Promise from 'bluebird';
 
 var VirtualBox = {
   command: function () {
     if(util.isWindows()) {
-      return 'C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe';
+      if (process.env.VBOX_MSI_INSTALL_PATH) {
+        return path.join(process.env.VBOX_MSI_INSTALL_PATH, 'VBoxManage.exe');
+      } else {
+        return path.join(process.env.VBOX_INSTALL_PATH, 'VBoxManage.exe');
+      }
     } else {
-      return '/usr/bin/VBoxManage';
+      return '/Applications/VirtualBox.app/Contents/MacOS/VBoxManage';
     }
-  },
-  filename: function () {
-    return util.isWindows() ? util.packagejson()['virtualbox-filename-win'] : util.packagejson()['virtualbox-filename'];
-  },
-  checksum: function () {
-    return util.isWindows() ? util.packagejson()['virtualbox-checksum-win'] : util.packagejson()['virtualbox-checksum'];
-  },
-  url: function () {
-    return `https://github.com/kitematic/virtualbox/releases/download/${util.packagejson()['virtualbox-version']}/${this.filename()}`;
   },
   installed: function () {
     if(util.isWindows()) {
-      return fs.existsSync('C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe') && fs.existsSync('C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe');
+      return (process.env.VBOX_MSI_INSTALL_PATH && fs.existsSync(path.join(process.env.VBOX_MSI_INSTALL_PATH, 'VBoxManage.exe'))) ||
+             (process.env.VBOX_INSTALL_PATH && fs.existsSync(path.join(process.env.VBOX_INSTALL_PATH, 'VBoxManage.exe')));
     } else {
-      return fs.existsSync('/usr/bin/VBoxManage') && fs.existsSync('/Applications/VirtualBox.app') && fs.existsSync('/Applications/VirtualBox.app/Contents/MacOS/VBoxManage');
+      return fs.existsSync('/Applications/VirtualBox.app') && fs.existsSync('/Applications/VirtualBox.app/Contents/MacOS/VBoxManage');
     }
   },
   active: function () {
@@ -68,15 +65,11 @@ var VirtualBox = {
       });
     }
   },
-  vmstate: function (name) {
-    return new Promise((resolve, reject) => {
-      util.exec([this.command(), 'showvminfo', name, '--machinereadable']).then(stdout => {
-        var match = stdout.match(/VMState="(\w+)"/);
-        if (!match) {
-          reject('Could not parse VMState');
-        }
-        resolve(match[1]);
-      }).catch(reject);
+  vmExists: function (name) {
+    return util.exec([this.command(), 'showvminfo', name]).then(() => {
+      return true;
+    }).catch((err) => {
+      return false;
     });
   }
 };

@@ -1,5 +1,5 @@
-var _ = require('underscore');
-var docker = require('../utils/DockerUtil');
+import _ from 'underscore';
+import docker from '../utils/DockerUtil';
 
 var ContainerUtil = {
   env: function (container) {
@@ -28,18 +28,20 @@ var ContainerUtil = {
     }
     var res = {};
     var ip = docker.host;
-    _.each(container.NetworkSettings.Ports, function (value, key) {
+    var ports = (container.NetworkSettings.Ports) ? container.NetworkSettings.Ports : (container.HostConfig.PortBindings) ? container.HostConfig.PortBindings : container.Config.ExposedPorts;
+    _.each(ports, function (value, key) {
       var dockerPort = key.split('/')[0];
       var localUrl = null;
       var localUrlDisplay = null;
+      var port = null;
       if (value && value.length) {
         var port = value[0].HostPort;
         localUrl = 'http://' + ip + ':' + port;
-        localUrlDisplay = ip + ':' + port;
       }
       res[dockerPort] = {
         url: localUrl,
-        display: localUrlDisplay
+        ip: ip,
+        port: port
       };
     });
     return res;

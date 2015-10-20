@@ -1,13 +1,12 @@
-var remote = require('remote');
-var app = remote.require('app');
-var shell = require('shell');
-var router = require('./router');
-var util = require('./utils/Util');
-var setupUtil = require('./utils/SetupUtil');
-var metrics = require('./utils/MetricsUtil');
-var machine = require('./utils/DockerMachineUtil');
-var dialog = remote.require('dialog');
+import remote from 'remote';
+import shell from 'shell';
+import router from './router';
+import util from './utils/Util';
+import metrics from './utils/MetricsUtil';
+import machine from './utils/DockerMachineUtil';
 import docker from './utils/DockerUtil';
+
+var app = remote.require('app');
 
 // main.js
 var MenuTemplate = function () {
@@ -17,7 +16,12 @@ var MenuTemplate = function () {
       submenu: [
       {
         label: 'About Kitematic',
-        selector: 'orderFrontStandardAboutPanel:'
+        click: function () {
+          metrics.track('Opened About', {
+            from: 'menu'
+          });
+          router.get().transitionTo('about');
+        }
       },
       {
         type: 'separator'
@@ -37,35 +41,9 @@ var MenuTemplate = function () {
         type: 'separator'
       },
       {
-        label: 'Install Docker Commands',
-        enabled: true,
-        click: function () {
-          metrics.track('Installed Docker Commands');
-          if (!setupUtil.shouldUpdateBinaries()) {
-            dialog.showMessageBox({
-              message: 'Docker binaries are already installed in /usr/local/bin',
-              buttons: ['OK']
-            });
-            return;
-          }
-
-          let copy = setupUtil.needsBinaryFix() ?
-               util.exec(setupUtil.macSudoCmd(setupUtil.copyBinariesCmd() + ' && ' + setupUtil.fixBinariesCmd())) :
-               util.exec(setupUtil.copyBinariesCmd());
-
-          copy.then(() => {
-            dialog.showMessageBox({
-              message: 'Docker binaries have been installed under /usr/local/bin',
-              buttons: ['OK']
-            });
-          }).catch((err) => {
-            console.log(err);
-          });
-        },
+        type: 'separator'
       },
       {
-        type: 'separator'
-      }, {
         label: 'Hide Kitematic',
         accelerator: util.CommandOrCtrl() + '+H',
         selector: 'hide:'
@@ -152,7 +130,7 @@ var MenuTemplate = function () {
       label: 'View',
       submenu: [
         {
-          label: 'Toggle DevTools',
+          label: 'Toggle Chromium Developer Tools',
           accelerator: 'Alt+' + util.CommandOrCtrl() + '+I',
           click: function() { remote.getCurrentWindow().toggleDevTools(); }
         }

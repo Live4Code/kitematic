@@ -1,24 +1,23 @@
-var _ = require('underscore');
-var $ = require('jquery');
-var React = require('react/addons');
-var Radial = require('./Radial.react');
-var ContainerProgress = require('./ContainerProgress.react');
-var ContainerHomePreview = require('./ContainerHomePreview.react');
-var ContainerHomeLogs = require('./ContainerHomeLogs.react');
-var ContainerHomeFolders = require('./ContainerHomeFolders.react');
-var shell = require('shell');
+import _ from 'underscore';
+import $ from 'jquery';
+import React from 'react/addons';
+import ContainerProgress from './ContainerProgress.react';
+import ContainerHomePreview from './ContainerHomePreview.react';
+import ContainerHomeLogs from './ContainerHomeLogs.react';
+import ContainerHomeFolders from './ContainerHomeFolders.react';
+import shell from 'shell';
 
 var ContainerHome = React.createClass({
   contextTypes: {
     router: React.PropTypes.func
   },
 
-  componentDidMount: function() {
+  componentDidMount: function () {
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
   },
 
-  componentWillUnmount: function() {
+  componentWillUnmount: function () {
     window.removeEventListener('resize', this.handleResize);
   },
 
@@ -39,14 +38,14 @@ var ContainerHome = React.createClass({
   showWeb: function () {
     return _.keys(this.props.ports).length > 0;
   },
-  
+
   showFolders: function () {
-    return this.props.container.Volumes && _.keys(this.props.container.Volumes).length > 0 && this.props.container.State.Running;
+    return this.props.container.Mounts && this.props.container.Mounts.length > 0 && this.props.container.State.Running;
   },
-  
+
   render: function () {
     if (!this.props.container) {
-      return;
+      return '';
     }
 
     let body;
@@ -70,11 +69,14 @@ var ContainerHome = React.createClass({
         }
 
         sum = sum / this.props.container.Progress.amount;
+        if (isNaN(sum)) {
+          sum = 0;
+        }
 
         body = (
           <div className="details-progress">
             <h2>Downloading Image</h2>
-            <h2>{(Math.round(sum*100)/100).toFixed(2)}%</h2>
+            <h2>{ (Math.round(sum * 100) / 100).toFixed(2) }%</h2>
             <div className="container-progress-wrapper">
               <ContainerProgress pBar1={values[0]} pBar2={values[1]} pBar3={values[2]} pBar4={values[3]}/>
             </div>
@@ -85,14 +87,14 @@ var ContainerHome = React.createClass({
         body = (
           <div className="details-progress">
             <h2>Waiting For Another Download</h2>
-            <Radial spin="true" progress="90" thick={true} transparent={true}/>
+            <div className="spinner la-ball-clip-rotate la-lg la-dark"><div></div></div>
           </div>
         );
       } else {
         body = (
           <div className="details-progress">
             <h2>Connecting to Docker Hub</h2>
-            <Radial spin="true" progress="90" thick={true} transparent={true}/>
+            <div className="spinner la-ball-clip-rotate la-lg la-dark"><div></div></div>
           </div>
         );
       }
